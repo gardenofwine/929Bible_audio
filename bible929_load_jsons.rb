@@ -27,6 +27,15 @@ def book_by_chapter(chapter)
 	end
 end
 
+def download_chapters
+	(1..187).each do |chapter|
+		chapter_filename = "#{MEDIA_DIR}/chapters/#{chapter}.mp3"
+		next if File.exists? chapter_filename
+		system 'curl', "http://reading.929.org.il/#{chapter}.mp3", '-o', chapter_filename
+	end
+end
+
+
 def download_posts(url, filename)
 	post_url_template = "http://www.929.org.il/api/pages/getPost?postId="
 
@@ -138,6 +147,7 @@ def layout_cd_files
 	end
 end
 
-# download_jsons
-# download_youtubes
+download_chapters
+download_jsons
+download_youtubes
 layout_cd_files
