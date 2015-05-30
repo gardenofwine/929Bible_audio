@@ -103,7 +103,7 @@ def process_post_json(file_path)
 	content = File.read file_path
 	post_json =	JSON.parse(content)
 	if post_json['embeddedVideo'] != nil &&  post_json['embeddedVideo'].length > 0
-		system 'youtube-dl', '-o', "#{output_filename}_b.mp3", post_json['embeddedVideo'], '-x', '--audio-format', 'mp3'
+		system 'youtube-dl', '-o', "#{output_filename}_b.%(ext)s", post_json['embeddedVideo'], '-x', '--audio-format', 'mp3', '--prefer-ffmpeg'
 		if (post_json['title'].length > 0)
 			system 'say', '-v', 'carmit', '-r', '120', '-o', "#{output_filename}_a.aiff", post_json['title']
 			system 'lame', '-m', 'm', "#{output_filename}_a.aiff", "#{output_filename}_a.mp3"
