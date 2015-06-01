@@ -3,7 +3,8 @@ __English instructions after the Hebrew ones__
 
 <div dir="rtl">
 
-[פרוייקט 929](http://www.929.org.il/today) הוא פרוייקט נהדר. התוכנה הנמצאת כאן מורידה את כל קבצי השמע של הפרוייקט - פרקי התורה המוקראים וכמו כן כל סרטוני היוטוב בפורמט אמ פי 3.
+<a href='http://www.929.org.il'>פרוייקט 929</a>
+הוא פרוייקט נהדר. התוכנה הנמצאת כאן מורידה את כל קבצי השמע של הפרוייקט - פרקי התורה המוקראים וכמו כן כל סרטוני היוטוב בפורמט אמ פי 3.
 
 התוכנה נכתבה במחשב מקינטוש, ולא בדקתי אותה על מחשב ווינדוס.
 
@@ -11,10 +12,10 @@ __English instructions after the Hebrew ones__
 יש להתקין את התוכנות הבאות לפני הרצה של התוכנה:
 
 <ol>
-<li> [Ruby](https://www.ruby-lang.org/en/downloads/) </li>
-<li> [youtube-dl](https://rg3.github.io/youtube-dl/) </li>
-<li> [ffmpeg](https://www.ffmpeg.org/download.html) </li>
-<li> [Mac text to speach - hebrew](http://andynaselli.com/how-to-make-your-mac-read-text-aloud) </li>
+<li> <a href='https://www.ruby-lang.org/en/downloads/'>Ruby</a> </li>
+<li> <a href='https://rg3.github.io/youtube-dl/'>youtube-dl</a> </li>
+<li> <a href='https://www.ffmpeg.org/download.html'> ffmpeg </a> </li>
+<li> <a href='http://andynaselli.com/how-to-make-your-mac-read-text-aloud'>Mac text to speach - hebrew </a> </li>
 </ol>
 לאחר מכן הורידו את התוכנה והריצו אותה כך:
 <pre>
@@ -38,7 +39,7 @@ media_downloaded/youtube
 
 <pre>
 txt
-<pre>
+</pre>
 
 תוכלו להקליט את שמות כותרות הקבצים בעצמכם. 
 
