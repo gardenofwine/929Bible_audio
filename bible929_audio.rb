@@ -14,28 +14,6 @@ WEEKLY_SUMMARY_POST_FILENAME_TEMPLATE = "book_%.2i_cha_%.3i_weeksum_post_%s.json
 BOOK_SUMMARY_POST_FILENAME_TEMPLATE = "book_%.2i_summary_post_%s.json"
 BOOK_CHAPTER_AUDIO_FILENAME_TEMPLATE = "book_%.2i_cha_%.3i_audio.mp3"
 
-
-POST_FILENAME_REGEX = /book_(\d*)_cha_(\d*)_post_(\d*).json/
-WEEKLY_POST_FILENAME_REGEX = /book_(\d*)_cha_(\d*)_weeksum_post_(\d*).json/
-BOOK_SUMMARY_POST_FILENAME_REGEX = /book_(\d*)_summary_post_(\d*).json/
-
-def book_by_chapter(chapter)
-	chapter_count = 0
-	CHAPTERS_PER_BOOK.each_with_index do |number_of_chapters_in_book, book|
-		chapter_count = chapter_count + number_of_chapters_in_book
-		return book if chapter <= chapter_count
-	end
-end
-
-def download_chapters
-	(1..187).each do |chapter|
-		chapter_filename = "#{MEDIA_DIR}/chapters/#{chapter}.mp3"
-		next if File.exists? chapter_filename
-		system 'curl', "http://reading.929.org.il/#{chapter}.mp3", '-o', chapter_filename
-	end
-end
-
-
 def download_posts(url, filename)
 	post_url_template = "http://www.929.org.il/api/pages/getPost?postId="
 
@@ -56,10 +34,7 @@ def download_posts(url, filename)
 		File.open post_filename, "w" do |file|
 			file.write post_content.to_json
 		end
-		# video_url = post_content['embeddedVideo']
-		# puts "ch #{chapter}. post #{post_id}. video #{video_url}"
 	end
-
 end
 
 def download_posts_for_chapter(chapter, book)
@@ -77,29 +52,6 @@ def download_book_summary_posts(index, book)
 	download_posts("#{summury_preview_url_template}#{index}", BOOK_SUMMARY_POST_FILENAME_TEMPLATE % [book, "%s"])
 end
 
-
-def download_jsons
-	Dir.mkdir JSON_DIR unless File.exist? JSON_DIR
-	# Fetch chpater posts
-	chapter_base = 1
-	CHAPTERS_PER_BOOK.each_with_index do |num_of_chapters, book_idx|
-		current_chapter = 0
-		num_of_chapters.times do |chapter_idx|
-			current_chapter = chapter_base + chapter_idx
-			download_posts_for_chapter(current_chapter, book_idx + 1)
-			if chapter_idx + 1 == num_of_chapters
-				# download book summary
-				puts "**== book summary"
-				download_book_summary_posts(BOOK_SUMMARY_START_INDEX + book_idx + 1, book_idx + 1)
-			elsif current_chapter % 5 == 0
-				# download week summary
-				puts "**== week summary"
-				download_weekly_summary_posts(WEEKLY_SUMMARY_START_INDEX + current_chapter / 5, current_chapter, book_idx + 1)
-			end
-		end
-		chapter_base = current_chapter + 1
-	end
-end
 
 def youtube_filename_by_json_file(file_path)
 	filename = file_path.sub(".json", "").sub("#{JSON_DIR}/", "")
@@ -125,6 +77,41 @@ def process_post_json(file_path)
 	end
 end
 
+def iterate_chapters
+	chapter_base = 1
+	CHAPTERS_PER_BOOK.each_with_index do |num_of_chapters, book_idx|
+		num_of_chapters.times do |chapter_idx|
+			last_chapter = (num_of_chapters == chapter_idx + 1)
+			yield book_idx + 1, chapter_base + chapter_idx, last_chapter
+		end
+		chapter_base = chapter_base + num_of_chapters
+	end
+end
+
+def download_chapters
+	iterate_chapters do |book, chapter, last_chapter|
+		chapter_filename = "#{MEDIA_DIR}/chapters/#{BOOK_CHAPTER_AUDIO_FILENAME_TEMPLATE % [book.to_i, chapter.to_i]}"
+		next if File.exists? chapter_filename
+		system 'curl', "http://reading.929.org.il/#{chapter}.mp3", '-o', chapter_filename
+	end
+end
+
+def download_jsons
+	Dir.mkdir JSON_DIR unless File.exist? JSON_DIR
+	# Fetch chpater posts
+
+	iterate_chapters do |book, chapter, last_chapter|
+		download_posts_for_chapter(chapter, book)
+		if last_chapter
+			# download book summary
+			download_book_summary_posts(BOOK_SUMMARY_START_INDEX + book, book)
+		elsif chapter % 5 == 0
+			# download week summary
+			download_weekly_summary_posts(WEEKLY_SUMMARY_START_INDEX + chapter / 5, chapter, book)
+		end
+	end
+end
+
 def download_youtubes
 	#Download videos and chapters
 	Dir["#{JSON_DIR}/*"].each_with_index do |filename, index|
@@ -132,22 +119,6 @@ def download_youtubes
 	end
 end
 
-def layout_cd_files
-	Dir["#{JSON_DIR}/*"].each_with_index do |filename, index|
-		match = filename.match /book_([\d]*)_cha_([\d]*)/
-		next unless match
-		book, chapter = match.captures
-
-		#copy chapter audio 
-		source_chapter_audio_file = "#{MEDIA_DIR}/chapters/#{chapter.to_i}.mp3"
-		output_chapter_audio_file = "output/#{BOOK_CHAPTER_AUDIO_FILENAME_TEMPLATE % [book.to_i, chapter.to_i]}"
-		if !File.exist? output_chapter_audio_file
-			FileUtils.copy source_chapter_audio_file, output_chapter_audio_file
-		end
-	end
-end
-
 download_chapters
 download_jsons
 download_youtubes
-layout_cd_files
