@@ -19,7 +19,7 @@ __English instructions after the Hebrew ones__
 
 התוכנה תתחיל להוריד הרבה קבצים. בסיום, פרקי התורה יהיו בתיקייה 
 
-`output`
+`media_downloaded/chapters`
 
 קבצי השמע אשר הופקו מסרטוני היוטוב יהיו בתיקייה
 
@@ -50,6 +50,6 @@ After downloading the script, run it like so:
 
 This will take a while - a few hours at least.
 
-The output files will be located at the  `output` and the `media_downloaded/youtube` directory.
+The output files will be located at the  `media_downloaded/chapters` and the `media_downloaded/youtube` directory.
 
 
