@@ -1,7 +1,9 @@
 # 929 תנ״ך ביחד - הורדת קבצי השמע
 __English instructions after the Hebrew ones__
 
-<div dir="rtl">Write this text right-to-left!
+<div dir="rtl">
+
+
 [פרוייקט 929](http://www.929.org.il/today) הוא פרוייקט נהדר. התוכנה הנמצאת כאן מורידה את כל קבצי השמע של הפרוייקט - פרקי התורה המוקראים וכמו כן כל סרטוני היוטוב בפורמט אמ פי 3.
 
 התוכנה נכתבה במחשב מקינטוש, ולא בדקתי אותה על מחשב ווינדוס.
@@ -35,6 +37,7 @@ __English instructions after the Hebrew ones__
 תוכלו להקליט את שמות כותרות הקבצים בעצמכם. 
 
 </div>
+
 # Project bibile 929 - audio download
 [Project 929](http://www.929.org.il/today) is an Isreali project encouraging people to read a bible chapter a day. The content is fully in Hebrew.
 
