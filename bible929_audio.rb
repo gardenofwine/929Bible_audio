@@ -58,22 +58,29 @@ def youtube_filename_by_json_file(file_path)
 	"#{MEDIA_DIR}/youtube/#{filename}" 
 end
 
+def download_youtube(title, url, output_filename)
+	return if File.exist? "#{output_filename}_b.mp3"
+	system 'youtube-dl', '-o', "#{output_filename}_b.%(ext)s", url, '-x', '--audio-format', 'mp3', '--prefer-ffmpeg'
+	if (title.length > 0)
+		system 'say', '-v', 'carmit', '-r', '120', '-o', "#{output_filename}_a.aiff", title
+		system 'lame', '-m', 'm', "#{output_filename}_a.aiff", "#{output_filename}_a.mp3"
+		File.delete "#{output_filename}_a.aiff"
+	else
+		File.open  "#{output_filename}_a_missing_title.txt", 'w' do |file|
+			file.write url
+		end
+	end
+end
+
 def process_post_json(file_path)
 	output_filename = youtube_filename_by_json_file(file_path)
 	return if File.exist? output_filename
 	content = File.read file_path
 	post_json =	JSON.parse(content)
 	if post_json['embeddedVideo'] != nil &&  post_json['embeddedVideo'].length > 0
-		system 'youtube-dl', '-o', "#{output_filename}_b.%(ext)s", post_json['embeddedVideo'], '-x', '--audio-format', 'mp3', '--prefer-ffmpeg'
-		if (post_json['title'].length > 0)
-			system 'say', '-v', 'carmit', '-r', '120', '-o', "#{output_filename}_a.aiff", post_json['title']
-			system 'lame', '-m', 'm', "#{output_filename}_a.aiff", "#{output_filename}_a.mp3"
-			File.delete "#{output_filename}_a.aiff"
-		else
-			File.open  "#{output_filename}_a_missing_title.txt", 'w' do |file|
-				file.write post_json['embeddedVideo']
-			end
-		end
+		download_youtube(post_json['title'], post_json['embeddedVideo'], output_filename)
+	elsif post_json['previewVideo'] != nil &&  post_json['previewVideo'].length > 0
+		download_youtube(post_json['title'], post_json['previewVideo'], output_filename)
 	end
 end
 
@@ -92,6 +99,7 @@ def download_chapters
 	iterate_chapters do |book, chapter, last_chapter|
 		chapter_filename = "#{MEDIA_DIR}/chapters/#{BOOK_CHAPTER_AUDIO_FILENAME_TEMPLATE % [book.to_i, chapter.to_i]}"
 		next if File.exists? chapter_filename
+		# if windows, run sysytem './curl'
 		system 'curl', "http://reading.929.org.il/#{chapter}.mp3", '-o', chapter_filename
 	end
 end
@@ -113,6 +121,7 @@ def download_jsons
 end
 
 def download_youtubes
+	
 	#Download videos and chapters
 	Dir["#{JSON_DIR}/*"].each_with_index do |filename, index|
 		process_post_json(filename)
