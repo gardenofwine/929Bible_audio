@@ -2,7 +2,7 @@
 __English instructions after the Hebrew ones__
 
 <div dir="rtl">
-## <a href="http://gardenofwine.github.io/929Bible_audio">הורדת קבצי השמע</a>
+<h2> <a href="http://gardenofwine.github.io/929Bible_audio">הורדת קבצי השמע</a> </h2>
 <br/>
 <br/>
 <a href='http://www.929.org.il'>פרוייקט 929</a>
