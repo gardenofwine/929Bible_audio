@@ -14,6 +14,9 @@ WEEKLY_SUMMARY_POST_FILENAME_TEMPLATE = "book_%.2i_cha_%.3i_weeksum_post_%s.json
 BOOK_SUMMARY_POST_FILENAME_TEMPLATE = "book_%.2i_summary_post_%s.json"
 BOOK_CHAPTER_AUDIO_FILENAME_TEMPLATE = "book_%.2i_cha_%.3i_audio.mp3"
 
+excludes = File.read "excludes.json"
+EXCLUDES_LIST =	JSON.parse(excludes)
+
 def download_posts(url, filename)
 	post_url_template = "http://www.929.org.il/api/pages/getPost?postId="
 
@@ -60,6 +63,7 @@ end
 
 def download_youtube(title, url, output_filename)
 	return if File.exist? "#{output_filename}_b.mp3"
+	return if EXCLUDES_LIST.include? "#{output_filename.split("/").last}_b"
 	system 'youtube-dl', '-o', "#{output_filename}_b.%(ext)s", url, '-x', '--audio-format', 'mp3', '--prefer-ffmpeg'
 	if (title.length > 0)
 		system 'say', '-v', 'carmit', '-r', '120', '-o', "#{output_filename}_a.aiff", title
@@ -75,6 +79,7 @@ end
 def process_post_json(file_path)
 	output_filename = youtube_filename_by_json_file(file_path)
 	return if File.exist? output_filename
+
 	content = File.read file_path
 	post_json =	JSON.parse(content)
 	if post_json['embeddedVideo'] != nil &&  post_json['embeddedVideo'].length > 0
