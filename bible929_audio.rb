@@ -5,8 +5,9 @@ require 'fileutils'
 WEEKLY_SUMMARY_START_INDEX = 1000
 BOOK_SUMMARY_START_INDEX = 2000
 
-# Genesis, Exodus, Leviticus, Numbers, Deuteronomy, Book of Joshua
-CHAPTERS_PER_BOOK = [50, 40, 27, 36, 34, 24]
+# Genesis, Exodus, Leviticus, Numbers, Deuteronomy, Book of Joshua, Book of Judges
+# book of Samuel A, 
+CHAPTERS_PER_BOOK = [50, 40, 27, 36, 34, 24, 21, 31]
 JSON_DIR = "json_downloaded"
 MEDIA_DIR = "media_downloaded"
 CHAPTER_POST_FILENAME_TEMPLATE = "book_%.2i_cha_%.3i_post_%s.json"
