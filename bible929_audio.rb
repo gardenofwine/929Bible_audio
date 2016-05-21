@@ -5,9 +5,13 @@ require 'fileutils'
 WEEKLY_SUMMARY_START_INDEX = 1000
 BOOK_SUMMARY_START_INDEX = 2000
 
+# Starting episode 358 (Isaiah {book 12} chapter 24), The site started to host all 
+# audio content exclusively in Soundcloud. 
+
 # Genesis, Exodus, Leviticus, Numbers, Deuteronomy, Book of Joshua, Book of Judges
-# book of Samuel A, book of Samuel B, Book of Kings A, Bok of kings B
-CHAPTERS_PER_BOOK = [50, 40, 27, 36, 34, 24, 21, 31, 24, 22, 25]
+# book of Samuel A, book of Samuel B, Book of Kings A, Bok of kings Bת
+# Book of Isaiah
+CHAPTERS_PER_BOOK = [50, 40, 27, 36, 34, 24, 21, 31, 24, 22, 25, 66]
 JSON_DIR = "json_downloaded"
 MEDIA_DIR = "media_downloaded"
 CHAPTER_POST_FILENAME_TEMPLATE = "book_%.2i_cha_%.3i_post_%s.json"
@@ -17,6 +21,8 @@ BOOK_CHAPTER_AUDIO_FILENAME_TEMPLATE = "book_%.2i_cha_%.3i_audio.mp3"
 
 excludes = File.read "excludes.json"
 EXCLUDES_LIST =	JSON.parse(excludes)
+SOUND_CLOUD_CLIENT_ID = "cUa40O3Jg3Emvp6Tv4U6ymYYO50NUGpJ"
+
 
 def download_posts(url, filename)
 	post_url_template = "http://www.929.org.il/api/pages/getPost?postId="
@@ -77,6 +83,23 @@ def download_youtube(title, url, output_filename)
 	end
 end
 
+def download_soundcloud(title, track_id, output_filename)
+	return if File.exist? "#{output_filename}_b.mp3"
+	return if EXCLUDES_LIST.include? "#{output_filename.split("/").last}_b"
+	soundcloud_download_url = "https://api.soundcloud.com/tracks/#{track_id}/download\?client_id\=#{SOUND_CLOUD_CLIENT_ID}"
+	system 'curl', '-L', soundcloud_download_url, '-o', "temp.m4a"
+	system 'ffmpeg', '-i', "temp.m4a", "#{output_filename}_b.mp3"
+	if (title.length > 0)
+		system 'say', '-v', 'carmit', '-r', '120', '-o', "#{output_filename}_a.aiff", title
+		system 'lame', '-m', 'm', "#{output_filename}_a.aiff", "#{output_filename}_a.mp3"
+		File.delete "#{output_filename}_a.aiff"
+	else
+		File.open "#{output_filename}_a_missing_title.txt", 'w' do |file|
+			file.write soundcloud_download_url
+		end
+	end
+end
+
 def process_post_json(file_path)
 	output_filename = youtube_filename_by_json_file(file_path)
 	return if File.exist? output_filename
@@ -87,6 +110,11 @@ def process_post_json(file_path)
 		download_youtube(post_json['title'], post_json['embeddedVideo'], output_filename)
 	elsif post_json['previewVideo'] != nil &&  post_json['previewVideo'].length > 0
 		download_youtube(post_json['title'], post_json['previewVideo'], output_filename)
+	elsif post_json['externalIframeURL'] != nil && post_json['externalIframeURL'].length > 0
+		match_data = /tracks\/(\d*)/.match post_json['externalIframeURL']
+		if (match_data && match_data.captures.length > 0)
+			download_soundcloud(post_json['mainCaption'], match_data.captures[0], output_filename)
+		end
 	end
 end
 
