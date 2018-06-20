@@ -5,13 +5,20 @@ require 'fileutils'
 WEEKLY_SUMMARY_START_INDEX = 1000
 BOOK_SUMMARY_START_INDEX = 2000
 
+START_BOOK = 26
+
 # Starting episode 358 (Isaiah {book 12} chapter 24), The site started to host all 
 # audio content exclusively in Soundcloud. 
 
 # Genesis, Exodus, Leviticus, Numbers, Deuteronomy, Book of Joshua, Book of Judges
-# book of Samuel A, book of Samuel B, Book of Kings A, Bok of kings Bת
-# Book of Isaiah
-CHAPTERS_PER_BOOK = [50, 40, 27, 36, 34, 24, 21, 31, 24, 22, 25, 66]
+# book of Samuel A, book of Samuel B, Book of Kings A, Book of kings B
+# Book of Isaiah, ## Jeremiah, Ezekiel,  Hosea, Joel, Amos, Obadiah, Jonah
+# Micah, Nahum, Habakkuk, Zephaniah, Haggai, Zechariah, Malachi, 
+# Proverbs, Song of Solomon, Job, Proverbs, Ruth, Lamentations, Ecclesiastes, Esther, 
+# Daniel, Ezra, Nehemiah, Chronicles A, Chronicles B
+CHAPTERS_PER_BOOK = [50, 40, 27, 36, 34, # Tanach 5
+ 	24, 21, 31, 24, 22, 25, 66, 52, 48, 14,	4,9,1,4,7,3,3,3,2,14,3, # neviim 21
+ 	150,31,42,8,4,5,12,10,12,10,13,29,36] # ktuvim
 JSON_DIR = "json_downloaded"
 MEDIA_DIR = "media_downloaded"
 CHAPTER_POST_FILENAME_TEMPLATE = "book_%.2i_cha_%.3i_post_%s.json"
@@ -121,9 +128,11 @@ end
 def iterate_chapters
 	chapter_base = 1
 	CHAPTERS_PER_BOOK.each_with_index do |num_of_chapters, book_idx|
-		num_of_chapters.times do |chapter_idx|
-			last_chapter = (num_of_chapters == chapter_idx + 1)
-			yield book_idx + 1, chapter_base + chapter_idx, last_chapter
+		if (book_idx >= START_BOOK)
+			num_of_chapters.times do |chapter_idx|
+				last_chapter = (num_of_chapters == chapter_idx + 1)
+				yield book_idx + 1, chapter_base + chapter_idx, last_chapter
+			end
 		end
 		chapter_base = chapter_base + num_of_chapters
 	end
@@ -134,7 +143,22 @@ def download_chapters
 		chapter_filename = "#{MEDIA_DIR}/chapters/#{BOOK_CHAPTER_AUDIO_FILENAME_TEMPLATE % [book.to_i, chapter.to_i]}"
 		next if File.exists? chapter_filename
 		# if windows, run sysytem './curl'
-		system 'curl', "http://reading.929.org.il/#{chapter}.mp3", '-o', chapter_filename
+		next if get_chapter_url(chapter) == nil
+		system 'curl', get_chapter_url(chapter), '-o', chapter_filename
+		# The chapters after 555 are hosted in a different place
+	end
+end
+
+def get_chapter_url(chapter_idx)
+	if chapter_idx <= 555
+		return "http://reading.929.org.il/#{chapter_idx}.mp3"
+	else 
+		response = HTTParty.get("https://www.929.org.il/api/pages/getChapterTracks?chapterID=#{chapter_idx}")
+		if response["value"].empty? 
+			puts "missing audio for chapter #{chapter_idx}"
+			return
+		end
+		return response["value"][0]["trackURL"]
 	end
 end
 
